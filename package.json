@@ -1,5 +1,5 @@
 {
-  "name": "landing-page-builder",
+  "name": "pageflow",
   "private": true,
   "version": "1.0.0",
   "workspaces": [
@@ -7,10 +7,11 @@
     "backend"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
-    "build": "npm run build --workspace frontend && npm run build --workspace backend",
-    "start": "npm run start --workspace backend",
-    "install:all": "npm install"
+    "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
+    "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "start": "npm run start --workspace=backend"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
