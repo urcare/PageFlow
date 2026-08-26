@@ -47,6 +47,7 @@ const allowedOrigins = new Set(
     'http://localhost:5173',
     'http://localhost:5174',
     'https://page-flow-frontend.vercel.app',
+    'https://page-flow-frontend-blue.vercel.app',
     ...(process.env.FRONTEND_URL || '').split(','),
   ]
     .map(normalizeOrigin)
