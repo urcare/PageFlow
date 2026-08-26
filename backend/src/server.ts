@@ -1,4 +1,5 @@
 import path from 'node:path';
+import fs from 'node:fs';
 import crypto from 'node:crypto';
 import dotenv from 'dotenv';
 import express, { type NextFunction, type Request, type Response } from 'express';
@@ -542,7 +543,21 @@ app.post('/api/uploads', uploadLimiter, ...requireAdmin, upload.single('image'),
   res.status(201).json({ path, url: data.publicUrl });
 });
 
-app.use((_req, res) => res.status(404).json({ error: 'Route not found.' }));
+// Serve the frontend static assets in production, with SPA fallback.
+// API routes (prefixed with /api) are registered above and therefore have priority.
+const frontendDist = path.resolve(process.cwd(), '../frontend/dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  // SPA fallback for non-API GET requests — serves index.html so client-side routing works.
+  app.get('*', (req, res, next) => {
+    if (req.method !== 'GET') return next();
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+} else {
+  // If the frontend dist is missing, keep the old behavior for unknown routes to avoid leaking files.
+  app.use((_req, res) => res.status(404).json({ error: 'Route not found.' }));
+}
 
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (error instanceof multer.MulterError) {
@@ -558,7 +573,7 @@ app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: 'Unexpected server error.' });
 });
 
-const server = app.listen(port, () => console.log(`PageFlow API listening on ${port}`));
+const server = app.listen(port, '0.0.0.0', () => console.log(`PageFlow API listening on ${port}`));
 
 const shutdown = () => {
   server.close(() => process.exit(0));
